@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace csharp
 {
@@ -18,65 +19,60 @@ namespace csharp
                 var backstage = Items[i].Name == "Backstage passes to a TAFKAL80ETC concert";
                 var notSulfuras = Items[i].Name != "Sulfuras, Hand of Ragnaros";
                 var qualityLess50 = Items[i].Quality < 50;
+
                 if (notAged && !backstage)
                 {
-                    if (Items[i].Quality > 0 && notSulfuras)
-                    {
-                        Items[i].Quality--;
-                    }
+                    NegativeQualityOrNotSulfuras(i, notSulfuras);
                 }
                 else
                 {
-                    if (qualityLess50)
-                    {
-                        Items[i].Quality++;
-                        qualityLess50 = Items[i].Quality < 50;
-
-                        if (backstage && qualityLess50)
-                        {
-                            if (Items[i].SellIn < 11)
-                            {
-                                Items[i].Quality++;
-                            }
-
-                            if (Items[i].SellIn < 6)
-                            {
-                                Items[i].Quality++;
-                            }
-                        }
-                    }
+                    if (qualityLess50) qualityLess50 = AgedWithQualityLessThan50(i, backstage);
                 }
-
+                
                 if (notSulfuras)
                 {
                     Items[i].SellIn--;
                 }
-
-                if (Items[i].SellIn < 0)
+                
+                if (Items[i].SellIn < 0 && notAged)
                 {
-                    if (notAged)
-                    {
-                        if (!backstage)
-                        {
-                            if (Items[i].Quality > 0 && notSulfuras)
-                            {
-                                Items[i].Quality--;
-                            }
-                        }
-                        else
-                        {
-                            Items[i].Quality = 0;
-                        }
-                    }
-                    else
-                    {
-                        if (qualityLess50)
-                        {
-                            Items[i].Quality++;
-                        }
-                    }
+                    Items[i].Quality = NegativeSellInAndNotAged(Items[i].Quality, backstage, notSulfuras);
+                    
+                }
+
+                if (Items[i].SellIn >= 0 || notAged || !qualityLess50) continue;
+                if (qualityLess50)
+                {
+                    Items[i].Quality++;
                 }
             }
+        }
+
+        private void NegativeQualityOrNotSulfuras(int i, bool notSulfuras)
+        {
+            if (!(Items[i].Quality <= 0 || !notSulfuras))
+            {
+                Items[i].Quality--;
+            }
+        }
+
+        private int NegativeSellInAndNotAged(int quality, bool backstage, bool notSulfuras)
+        {
+            if (backstage) return 0;
+            if (quality <= 0 || !notSulfuras) return quality;
+            return quality -= 1;
+        }
+
+        private bool AgedWithQualityLessThan50(int i, bool backstage)
+        {
+            Items[i].Quality++;
+            var qualityLess50 = Items[i].Quality < 50;
+
+            if (!backstage || !qualityLess50 || Items[i].SellIn >= 11) return qualityLess50;
+            Items[i].Quality++;
+            if (Items[i].SellIn >= 6) return true;
+            Items[i].Quality++;
+            return true;
         }
     }
 }
