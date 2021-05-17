@@ -6,7 +6,7 @@ namespace csharp
     [TestFixture]
     public class GildedRoseTest
     {
-        [Ignore("Later")]
+        //[Ignore("Later")]
         [Test]
         public void foo()
         {
